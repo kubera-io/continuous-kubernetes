@@ -23,7 +23,7 @@ jobs:
   release:
     name: Make Github Release
     runs-on: ubuntu-18.04
-    needs: ['unittest', 'e2etest']
+    needs: ['e2etest']
     steps:
       - name: Checkout Code
         uses: actions/checkout@v1
