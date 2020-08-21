@@ -1,0 +1,39 @@
+---
+name: Unit Test, E to E Solution Test 
+on: [push, pull_request]
+jobs:
+  e2etest:
+    runs-on: ubuntu-18.04
+    strategy:
+      matrix:
+        test: ['e2e-test']
+    name: ${{ matrix.test }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v2
+      - name: Setup GOPATH
+        run: |
+          echo "::set-env name=GOPATH::$(go env GOPATH)"
+          echo "::add-path::$(go env GOPATH)/bin"
+      - name: Setup Golang
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.13.5
+      - run: sudo make ${{ matrix.test }}
+  release:
+    name: Make Github Release
+    runs-on: ubuntu-18.04
+    needs: ['e2etest']
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v1
+      - name: Setup Node.js
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12
+      - name: Install NPM Dependencies to Make Release
+        run: npm install ci
+      - name: Make Semantic Release
+        env:
+          GH_TOKEN: ${{ secrets.PAT }}
+        run: npx semantic-release
